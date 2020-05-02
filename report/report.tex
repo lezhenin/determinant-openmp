@@ -1,0 +1,319 @@
+%! Suppress = Makeatletter
+%! Suppress = Makeatletter
+
+\documentclass[a4paper,14pt]{extarticle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[russian]{babel}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,mathtools}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{lipsum}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{titlesec}
+\usepackage{multirow}
+\usepackage{svg}
+\usepackage{tikz}
+
+\makeatletter
+\renewcommand{\ALG@name}{Алгоритм}
+\makeatother
+
+\titleformat{\section}
+{\normalfont\fontsize{16}{18}\bfseries}{\thesection}{1em}{}
+
+\lstset{ %
+    extendedchars=\true,
+    keepspaces=true,
+    language=C++,		    	    %choose the language of the code
+    basicstyle=\small,		% the size of the fonts that are used for the code
+    numbers=left,					% where to put the line-numbers
+    numberstyle=\footnotesize,	    % the size of the fonts that are used for the line-numbers
+    stepnumber=1,					% the step between two line-numbers. If it is 1 each line will be numbered
+    numbersep=10pt,					% how far the line-numbers are from the code
+    backgroundcolor=\color{white},	% choose the background color. You must add \usepackage{color}
+    showspaces=false, 		    	% show spaces adding particular underscores
+    showstringspaces=false,			% underline spaces within strings
+    showtabs=false,					% show tabs within strings adding particular underscores
+    frame=tb,                  		% adds a frame around the code
+    tabsize=4,						% sets default tabsize to 2 spaces
+    captionpos=b,					% sets the caption-position to bottom
+    breaklines=true,				% sets automatic line breaking
+    breakatwhitespace=false,		% sets if automatic breaks should only happen at whitespace
+    escapeinside={\%*}{*)},			% if you want to add a comment within your code
+    morekeywords={pragma, parallel, omp, collaps, schedule, shared, reduction, collapse},
+    xleftmargin=1.5em,
+    framexleftmargin=2em
+}
+
+\begin{document}
+
+    \begin{titlepage}
+        \centering
+        Санкт-Петербургский политехнический университет Петра Великого \\
+        \vspace{0.15cm}
+        Высшая школа интеллектуальных систем и суперкомпьютерных технологий \\
+        \vspace{6.5cm}
+
+        {
+            \centering \textbf{Лабораторная работа} \\
+            \vspace{0.15cm}
+            \textbf{Дисциплина}: Параллельные вычисления \\
+            \vspace{0.15cm}
+            \textbf{Тема}: Расчет определителя матрицы.
+        } \\
+
+        \vspace{6.5cm}
+
+        \begin{table}[H]
+            \begin{tabular}{p{\textwidth}@{}r}
+            {Выполнил студент гр. 3540901/91502} \hfill { %! Suppress = LineBreak
+                $\underset{\text{(подпись)}}{\underline{\hspace{0.25\textwidth}}}$ Ю. И. Леженин
+            } \\
+            {Преподаватель} \hfill { %! Suppress = LineBreak
+                $\underset{\text{(подпись)}}{\underline{\hspace{0.25\textwidth}}}$ И. В. Стручков ~
+            } \\ ~ \\
+            {} \hfill { "\underline{\hspace{0.08\textwidth}}" \underline{\hspace{0.2\textwidth}}2020 г.} \\
+            \end{tabular}
+        \end{table}
+
+        \vfill
+
+        {\centering Санкт-Петербург \\ \vspace{0.15cm} 2020 }
+
+    \end{titlepage}
+
+    \tableofcontents
+
+    \newpage
+    \section{Алгоритм вычисления определителя матрицы.}
+
+    Общепринятый на практике метод вычисления определителя матрицы основан на выполнении $LU$-разложения.
+    Квадратная матрица $A$ может быть представлена в виде:
+    \begin{equation*}
+        A = P^{-1} \, L \, U,
+    \end{equation*}
+    где $P^{-1}$ -- матрица перестановок, $L$ -  нижняя унитреугольная матрица, а $U$ верхняя треугольная матрица.
+    В этом случае
+    \begin{equation*}
+        \det(A) = \det(P^{-1}) \cdot \det(L) \cdot \det(U) = \epsilon \cdot 1 \cdot \det(U),
+    \end{equation*}
+    где $\epsilon \in \{-1, +1\}$ -- знак матрицы перестановок:
+    -1 для нечетного числа перестановок и +1 для четного числа перестановок.
+    Определитель треугольной матрицы $U$ равен произведению диагональных элементов.
+
+    Поиск треугольной матрицы $U$ может быть выполнен с помощью метода Гаусса.
+    Для этого необходимо каждую строку $i = \overline{1, n}$ исходной матрицы $A$ вычесть из каждой нижней строки
+    $j = \overline{i+1, n}$, домножив на коэффициента $r = a_{ij}/a_{ii}$.
+    При вычислении коэффициента $r$ может возникнуть деление 0,
+    поэтому необходимо предварительно выполнить перестановку строк так, чтобы $a_{ii} \neq 0, \: i = \overline{1, n}$.
+    Если перестановку выполнить не возможно, то матрица $A$ является сингулярной и $\det(A)$ = 0.
+    Описанная процедура представлена в виде алгоритма~\ref{alg:det}.
+    Данный алгоритм имеет временную сложность $O(n^3)$.
+
+    \begin{algorithm}[h]
+        \caption{Вычисление определителя матрицы.}
+        \label{alg:det}
+        \begin{algorithmic}[1]
+            \Function{determinant}{$A, \; n$}%\Comment Матрица $M$ размером $n \times n$
+            \State $p$, singular $\gets$ swapRows($A, \; n$)\Comment $p$ -- число перестановок
+            \If {singualr}
+            \State \textbf{return} $0$
+            \EndIf
+            \For {$i \gets  \overline{1, n}$} \Comment Итерация про строкам
+            \For {$j \gets \overline{i+1, n}$} \Comment Итерация по строкам ниже
+            \State $r \gets a_{ij} / a_{ii}$
+            \For {$k \gets  \overline{1, n}$} \Comment Вычитание домноженной строки
+            \State $a_{ik} \gets a_{jk} - r \cdot a_{ik} $
+            \EndFor
+            \EndFor
+            \EndFor
+            \State $d \gets 1$
+            \For {$i \gets \overline{1, n}$}\Comment Перемножение диагональных элементов
+            \State $d \gets d \cdot a_{ii}$
+            \EndFor
+            \algstore{det}
+        \end{algorithmic}
+    \end{algorithm}
+
+    \begin{algorithm}[h]
+        \begin{algorithmic}[1]
+            \algrestore{det}
+            \If {$p \mod 2 = 1$}
+            \State $d \gets -1 \cdot d$
+            \EndIf
+            \State \textbf{return} $d$
+            \EndFunction
+        \end{algorithmic}
+    \end{algorithm}
+
+    \section{Реализация вычисления определителя матрицы.}
+
+    Описанный выше алгоритм вычисления определителя матрицы был реализован на языке C++ с использованием
+    стандарта OpenMP для распараллеливания вычислений.
+    Соответствующий фрагмент исходного кода представлен в листинге~\ref{lst:det}.
+    \vspace{0.5em}
+    \begin{lstlisting}[
+        caption={Реализация алгоритма вычисления определителя матрицы.},
+        label={lst:det}
+    ]
+const auto[singular, permutations] = swapRows(matrix);
+if (singular) {
+    return 0.0;
+}
+
+const Index n = matrix.columnNumber();
+std::vector<T> ratio(n); ratio.resize(n);
+T determinant = permutations % 2 == 0 ? 1 : -1;
+
+#pragma omp parallel default(none) shared(matrix, ratio)
+reduction(*:determinant) if (enable_parallel)
+{
+    for (Index i = 0; i < n; ++i) {                 // loop 1
+        #pragma omp for schedule(static)
+        for (Index j = i + 1; j < n; ++j) {         // loop 2
+            ratio[j] = matrix(j, i) / matrix(i, i);
+        }
+        #pragma omp for collapse(2) schedule(static)
+        for (Index j = i + 1; j < n; ++j) {         // loop 3
+            for (Index k = 0; k < n; ++k) {         // loop 4
+                matrix(j, k) =
+                    matrix(j, k) - ratio[j] * matrix(i, k);
+            }
+        }
+    }
+    #pragma omp for schedule(static)
+    for (Index i = 0; i < n; ++i) {                 // loop 5
+        determinant *= matrix(i, i);
+    }
+}
+
+return determinant;
+\end{lstlisting}
+
+    Распараллеливание вычислений достигалось за счет параллельного выполнения циклов.
+    Всего для вычисления определителя в программе выполняется пять циклов,
+    в которых выполняется работа со следующими данными: матрица matrix,
+    вектор коэффициентов ratio и значение определителя determinant.
+    Все пять циклов объединены в одну параллельную секцию, чтобы избежать многократного создания и уничтожения потоков.
+    Первый внешний цикл \textit{loop1} выполняется последовательно, так как его итерации зависимы,
+    остальные циклы выполняются параллельно.
+    В данном случае исключена возможность одновременного обращения к одной ячейке матрицы или вектора коэффициентов из
+    разных потоков для выполнения записи, поэтому переменные matrix и ratio разделяются между всеми потоками с помощью
+    директивы shared.
+    Конечное значение определителя получается путем перемножения итоговых значений переменной determinant в каждом потоке,
+    что указывается с помощью директивы reduction.
+    Также циклы \textit{loop3} и \textit{loop4} были объединены с помощью директивы collapse,
+    чтобы уменьшить объем вычислений в рамках одной итерации.
+
+    Для созданной программы был разработан набор тестов с помощью библиотеки
+    Google Test\footnote{https://github.com/google/googletest}, в которых проверялось
+    корректность вычисления определителя случайной матрицы при параллельном и последовательном исполнении программы.
+
+    \section{Время выполнения программ}
+
+    Для созданной программы было измерено время выполнения при разном числе рабочих потоков и разном размере матрицы.
+    Измерения выполнялись с помощью библиотеки Google Benchmark\footnote{https://github.com/google/benchmark} на компьютере,
+    параметры которого представлены в таблице~\ref{tab:par}.
+    \begin{table}[b]
+        \centering
+        \begin{tabular}{lr}
+            \toprule
+            Процессор &  Intel\textregistered{} Core\texttrademark{}  i7-8550U  \\
+            Тактовая частота & 4000 МГц \\
+            \midrule
+            Количество реальных CPU & 4 \\
+            Количество виртуальных CPU & 8 \\
+            \midrule
+            Объема кеша данных L1 & 4 $\times$ $\;\,\;\,$32 КБ  \\
+            Объема кеша инструкций L1 & 4 $\times$ $\;\,\;\,$32 КБ  \\
+            Объема общего кеша L2 & 4 $\times$ $\;\,$256 КБ \\
+            Объема общего кеша L3 & 1 $\times$ 8192 КБ \\
+            \bottomrule
+        \end{tabular}
+        \caption{Параметры компьютера, на котором проводились измерения времени выполнения программы.}
+        \label{tab:par}
+    \end{table}
+    С заданным количеством потоков и размером матрицы программа запускалась 100 раз.
+    Среднее значение, медиана и среднеквадратическое отклонение (СКО) времени выполнения программы для каждой
+    конфигурации приведены в таблице~\ref{tab:res}.
+    \begin{table}[t]
+        \centering
+        \begin{tabular}{ccrrrr}
+            \toprule
+            Размер матрицы & Число потоков & Среднее & Медиана & СКО  \\
+            \midrule
+            \multirow{4}{*}{128} & 1 & 1.5549 & 1.5528 & 0.0544 \\
+            & 2 & 0.8697 & 0.8601 & 0.0330 \\
+            & 4 & 0.6460 & 0.6447 & 0.0047 \\
+            & 8 & 0.7059 & 0.6983 & 0.0491 \\
+            \midrule
+            \multirow{4}{*}{256} & 1 & 11.5983 & 11.5735 & 0.0741 \\
+            & 2 & 5.8774 & 5.8610 & 0.0340 \\
+            & 4 & 3.8964 & 3.8874 & 0.0424 \\
+            & 8 & 4.0800 & 4.0222 & 0.1638 \\
+            \midrule
+            \multirow{4}{*}{512} & 1 & 90.6609 & 90.3180 & 0.8492 \\
+            & 2 & 46.0939 & 45.9268 & 0.3681 \\
+            & 4 & 29.6951 & 29.1847 & 2.1502 \\
+            & 8 & 29.7776 & 29.5715 & 0.6992 \\
+            \midrule
+            \multirow{4}{*}{1024} & 1 & 726.3535 & 723.7002 & 7.5450 \\
+            & 2 & 379.3393 & 378.1386 & 4.8630  \\
+            & 4 & 254.5211 & 246.6211 & 19.7006 \\
+            & 8 & 242.0866 & 240.3842 & 5.3130 \\
+            \midrule
+            \multirow{4}{*}{2048} & 1 & 6362.3304 & 6330.5451 & 59.5313 \\
+            & 2 & 3393.8876 & 3380.3598 & 50.7967 \\
+            & 4 & 2459.6841 & 2412.11952 & 107.47609 \\
+            & 8 & 2388.7951 & 2378.5972 & 30.4998 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Результаты измерений времени выполнения программы.}
+        \label{tab:res}
+    \end{table}
+    На рисунке~\ref{fig:res} представлена зависимость среднего времени выполнения программы от размера матрицы
+    при разном количестве потоков.
+    Дополнительно, в таблице~\ref{tab:resm} показан коэффициент ускорения:
+    во сколько раз удалось уменьшить время выполнения программы, увеличив число потоков.
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{cccccc}
+            \toprule
+            \multirow{2}{*}{Число потоков} & \multicolumn{5}{c}{Размер матрицы} \\
+            \cmidrule(l){2-6}
+            &  128 & 256 & 512 & 1024 & 2048 \\
+            \midrule
+            1 & 1.0000 & 1.0000 & 1.0000 & 1.0000 & 1.0000 \\
+            2 & 1.7879 & 1.9734 & 1.9669 & 1.9148 & 1.8746 \\
+            4 & 2.4069 & 2.9767 & 3.1065 & 2.8538 & 2.5866 \\
+            8 & 2.2027 & 2.8427 & 3.0658 & 3.0004 & 2.6634 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Коэффициент ускорения выполнения программы.}
+        \label{tab:resm}
+    \end{table}
+
+    \begin{figure}[p]
+        \centering
+        \includesvg[scale=1]{../output/plot.svg}
+        \includesvg[scale=1]{../output/plot_log.svg}
+        \caption{
+            Зависимость среднего времени выполнения программы от размера матрицы при разном количестве потоков
+            в линейном (сверху) и логарифмическом (снизу) масштабах.
+        }
+        \label{fig:res}
+    \end{figure}
+
+    \section{Выводы.}
+
+    В ходе выполнения работы была разработана программа, которая выполняет вычисление определителя матрицы.
+    Вычисления были распределены с помощью OpenMP\@.
+
+\end{document}
