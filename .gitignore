@@ -1,4 +1,7 @@
+.*
+cmake-*
 venv
 out
-cmake-*
-.*
+
+*.pdf
+*.pdf_tex
