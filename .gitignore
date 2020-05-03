@@ -1,5 +1,6 @@
 .*
 cmake-*
+
 venv
 out
 
