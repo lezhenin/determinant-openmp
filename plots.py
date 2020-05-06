@@ -75,3 +75,19 @@ plt.yticks(fontsize=14)
 plt.legend(['1 поток'] + [f'{i} потока' for i in [2, 4, 8]], fontsize=14)
 plt.savefig('./output/plot_log.svg')
 plt.show()
+
+
+values = results.query(f'aggregate == "mean" and matrix_size == 2048').loc[:, ['threads', 'real_time']].values
+
+plt.figure(figsize=(6.5, 4.5))
+plt.plot(values[:, 0], values[:, 1], '-o')
+plt.grid()
+plt.ylim([0, 7000])
+plt.xscale('log', basex=2)
+plt.ylabel('Время (мс)', fontsize=14)
+plt.xlabel('Количество потокв', fontsize=14)
+plt.xticks([1, 2, 4, 8], [1, 2, 4, 8], fontsize=14)
+plt.yticks(fontsize=14)
+plt.savefig('./output/plot_threads.svg')
+plt.show()
+
