@@ -56,40 +56,45 @@
 
 \begin{document}
 
-    \begin{titlepage}
-        \centering
-        Санкт-Петербургский политехнический университет Петра Великого \\
-        \vspace{0.15cm}
-        Высшая школа интеллектуальных систем и суперкомпьютерных технологий \\
-        \vspace{6.5cm}
+    \begin{titlepage} % начало титульной страницы
 
-        {
-            \centering \textbf{Лабораторная работа} \\
-            \vspace{0.15cm}
-            \textbf{Дисциплина}: Параллельные вычисления \\
-            \vspace{0.15cm}
-            \textbf{Тема}: Расчет определителя матрицы.
-        } \\
+    \begin{center}  % выравнивание по центру
 
-        \vspace{6.5cm}
+        \normalsize Санкт-Петербургский политехнический университет Петра Великого\\
+        \normalsize Институт компьютерных наук и технологий \\
+        \normalsize Высшая школа интеллектуальных систем и суперкомпьютерных технологий\\[5cm]
+        % название института, затем отступ 6см
 
-        \begin{table}[H]
-            \begin{tabular}{p{\textwidth}@{}r}
-            {Выполнил студент гр. 3540901/91502} \hfill { %! Suppress = LineBreak
-                $\underset{\text{(подпись)}}{\underline{\hspace{0.25\textwidth}}}$ Ю. И. Леженин
-            } \\
-            {Преподаватель} \hfill { %! Suppress = LineBreak
-                $\underset{\text{(подпись)}}{\underline{\hspace{0.25\textwidth}}}$ И. В. Стручков ~
-            } \\ ~ \\
-            {} \hfill { "\underline{\hspace{0.08\textwidth}}" \underline{\hspace{0.2\textwidth}}2020 г.} \\
-            \end{tabular}
-        \end{table}
+        \huge Параллельные вычисления\\[0.5cm] % название работы, затем отступ 0,5см
+        \large Отчёт по лабораторной работе\\[0.1cm]
+        \large Расчет определителя матрицы \\[4cm]
 
-        \vfill
+    \end{center}
 
-        {\centering Санкт-Петербург \\ \vspace{0.15cm} 2020 }
 
-    \end{titlepage}
+    \begin{flushright} % выравнивание по правому краю
+        \begin{minipage}{0.25\textwidth} % врезка в половину ширины текста
+            \begin{flushleft} % выровнять её содержимое по левому краю
+
+                \large\textbf{Работу выполнил:}\\
+                \large Леженин Ю. И.\\
+                \large {Группа:} 3540901/91502\\
+
+                \large \textbf{Преподаватель:}\\
+                \large Стручков И. В.
+
+            \end{flushleft}
+        \end{minipage}
+    \end{flushright}
+
+    \vfill % заполнить всё доступное ниже пространство
+
+    \begin{center}
+        \large Санкт-Петербург\\
+        \large \the\year % вывести дату
+    \end{center} % закончить выравнивание по центру
+
+    \end{titlepage} % конец титульной страницы
 
     \tableofcontents
 
